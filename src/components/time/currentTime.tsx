@@ -46,7 +46,6 @@ const CurrentTimeAndIftarCountdown = () => {
 
                     setStartDay(startDay);
 
-
                     const monthlyData = Object.values(data.times).map((dayTimes: any) => {
                         if (Array.isArray(dayTimes) && dayTimes.every(time => typeof time === 'string')) {
                             return dayTimes;
@@ -64,7 +63,6 @@ const CurrentTimeAndIftarCountdown = () => {
     const startCountdown = (iftarTime: string) => {
         const updateCountdown = () => {
             const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset() + 180);
             const iftarTimeArr = iftarTime.split(/[- :]/);
             const iftarDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(iftarTimeArr[0]), parseInt(iftarTimeArr[1]), iftarTimeArr.length > 2 ? parseInt(iftarTimeArr[2]) : 0);
 
