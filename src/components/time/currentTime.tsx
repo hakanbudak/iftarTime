@@ -8,26 +8,34 @@ const CurrentTimeAndIftarCountdown = () => {
     function translateCityName(cityName: string): string {
         return cityNamesMap[cityName] || cityName;
     }
-    useEffect(() => {
-        const today = new Date().toISOString().split('T')[0];
 
-        fetch('http://ip-api.com/json/?fields=city')
+    useEffect(() => {
+        const today = new Date();
+        today.setDate(today.getDate() - 1);
+        const formattedToday = today.toISOString().split('T')[0];
+
+        const todayForDisplay = new Date().toISOString().split('T')[0];
+
+        fetch(`http://ip-api.com/json/?fields=city`)
             .then((response) => response.json())
             .then((data) => {
                 const cityEnglish = data.city;
                 const cityTurkish = translateCityName(cityEnglish);
 
-                return fetch(`https://namaz-vakti.vercel.app/api/timesFromPlace?country=Turkey&region=${cityTurkish}&city=${cityTurkish}&date=${today}&days=1&timezoneOffset=180&calculationMethod=Turkey`);
+                return fetch(`https://namaz-vakti.vercel.app/api/timesFromPlace?country=Turkey&region=${cityTurkish}&city=${cityTurkish}&date=${formattedToday}&days=1&timezoneOffset=180&calculationMethod=Turkey`);
             })
             .then(response => response.json())
             .then(data => {
-                const iftarTime =  data.times[today][4];;
-                setIftarData({
-                    city: data.place.city,
-                    iftarTime: iftarTime
-                });
-                startCountdown(iftarTime);
-
+                const times = data.times[formattedToday];
+                if(times && times.length > 4) {
+                    setIftarData({
+                        city: data.place.city,
+                        iftarTime: times[4],
+                        times: times,
+                        today: todayForDisplay
+                    });
+                    startCountdown(times[4]);
+                }
             })
             .catch((error) => console.error('Error:', error));
     }, []);
@@ -60,16 +68,32 @@ const CurrentTimeAndIftarCountdown = () => {
 
 
     return (
-        <div>
+        <div className="bg-white shadow-2xl rounded-2xl p-8 max-w-5xl w-full mx-auto">
             {iftarData && (
-                <div>
-                    <p> {iftarData.city}</p>
-                    <p>Iftar Saati: {iftarData.iftarTime}</p>
-                    <p>İftara Kalan Süre: {countdown}</p>
-                </div>
+                <>
+                    <div className="flex flex-col items-center text-center">
+                        <h2 className="text-3xl font-semibold text-gray-900 mb-4">{iftarData.city}</h2>
+                        <div className="text-lg text-gray-600 mb-6">{iftarData.today}</div>
+                        <div className="text-4xl font-bold text-green-600 mb-6">
+                            {countdown}
+                        </div>
+                        <div className="flex justify-center items-center w-full">
+                            <div className="border-t-2 border-green-600 w-full max-w-xs py-2">
+                                <p className="text-center text-green-600">Kalan Süre</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4 justify-center mx-auto">
+                        {iftarData.times.map((time: string, index: number) => (
+                            <div key={index} className="p-4 bg-gray-50 rounded-lg shadow flex flex-col items-center justify-center">
+                                <div className={`text-md font-semibold ${index === 4 ? "text-orange-500" : "text-gray-800"}`}>{time}</div>
+                                <div className="text-sm text-gray-600">{["Sahur", "Güneş", "Öğle", "İkindi", "İftar", "Teravih"][index]}</div>
+                            </div>
+                        ))}
+                    </div>
+                </>
             )}
         </div>
-
     );
 };
 

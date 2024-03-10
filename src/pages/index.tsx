@@ -2,8 +2,8 @@ import CurrentTimeAndIftarCountdown from "@/components/time/currentTime";
 
 export default function Home() {
   return (
-    <main >
+      <main className="bg-gray-100 min-h-screen flex items-center justify-center">
        <CurrentTimeAndIftarCountdown/>
-    </main>
+      </main>
   );
 }
