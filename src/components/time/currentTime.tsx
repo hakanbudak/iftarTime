@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { cityNamesMap } from "@/enums";
 import IconLocation from "@/components/icon/IconLocation";
+import MonthlyPrayerTimes from "./monthlyPrayerTimes";
 
 const CurrentTimeAndIftarCountdown = () => {
     const [iftarData, setIftarData] = useState<any>(null);
     const [countdown, setCountdown] = useState<string>('');
+    const [monthlyTimes, setMonthlyTimes] = useState<string[][]>([]);
+    const [startDay, setStartDay] = useState<number>(0);
 
     function translateCityName(cityName: string): string {
         return cityNamesMap[cityName] || cityName;
@@ -12,10 +15,11 @@ const CurrentTimeAndIftarCountdown = () => {
 
     useEffect(() => {
         const today = new Date();
+        today.setMinutes(today.getMinutes() - today.getTimezoneOffset() + 180);
         today.setDate(today.getDate() - 1);
         const formattedToday = today.toISOString().split('T')[0];
 
-        const todayForDisplay = new Date().toISOString().split('T')[0];
+        const todayForDisplay = new Intl.DateTimeFormat('tr-TR').format(new Date());
 
         fetch(`https://get.geojs.io/v1/ip/geo.json`)
             .then((response) => response.json())
@@ -23,7 +27,7 @@ const CurrentTimeAndIftarCountdown = () => {
                 const cityEnglish = data.city;
                 const cityTurkish = translateCityName(cityEnglish);
 
-                return fetch(`https://namaz-vakti.vercel.app/api/timesFromPlace?country=Turkey&region=${cityTurkish}&city=${cityTurkish}&date=${formattedToday}&days=1&timezoneOffset=180&calculationMethod=Turkey`);
+                return fetch(`https://namaz-vakti.vercel.app/api/timesFromPlace?country=Turkey&region=${cityTurkish}&city=${cityTurkish}&date=${formattedToday}&days=30&timezoneOffset=180&calculationMethod=Turkey`);
             })
             .then(response => response.json())
             .then(data => {
@@ -36,6 +40,22 @@ const CurrentTimeAndIftarCountdown = () => {
                         today: todayForDisplay
                     });
                     startCountdown(times[4]);
+                    const firstDateKey = Object.keys(times)[0];
+                    const startDayDate = new Date(firstDateKey);
+                    const startDay = startDayDate.getDate();
+
+                    setStartDay(startDay);
+
+
+                    const monthlyData = Object.values(data.times).map((dayTimes: any) => {
+                        if (Array.isArray(dayTimes) && dayTimes.every(time => typeof time === 'string')) {
+                            return dayTimes;
+                        } else {
+                            return [];
+                        }
+                    });
+
+                    setMonthlyTimes(monthlyData);
                 }
             })
             .catch((error) => console.error('Error:', error));
@@ -44,6 +64,7 @@ const CurrentTimeAndIftarCountdown = () => {
     const startCountdown = (iftarTime: string) => {
         const updateCountdown = () => {
             const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset() + 180);
             const iftarTimeArr = iftarTime.split(/[- :]/);
             const iftarDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(iftarTimeArr[0]), parseInt(iftarTimeArr[1]), iftarTimeArr.length > 2 ? parseInt(iftarTimeArr[2]) : 0);
 
@@ -64,8 +85,6 @@ const CurrentTimeAndIftarCountdown = () => {
 
         return () => clearInterval(timer);
     };
-
-
 
     return (
         <div className="bg-white shadow-2xl rounded-2xl p-8 max-w-5xl w-full mx-auto">
@@ -93,9 +112,9 @@ const CurrentTimeAndIftarCountdown = () => {
                             </div>
                         ))}
                     </div>
-
                 </>
             )}
+            <MonthlyPrayerTimes monthlyTimes={monthlyTimes} startDay={startDay} />
         </div>
     );
 
