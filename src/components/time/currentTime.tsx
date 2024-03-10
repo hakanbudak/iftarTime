@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { cityNamesMap } from "@/enums";
+import IconLocation from "@/components/icon/IconLocation";
 
 const CurrentTimeAndIftarCountdown = () => {
     const [iftarData, setIftarData] = useState<any>(null);
@@ -72,29 +73,33 @@ const CurrentTimeAndIftarCountdown = () => {
             {iftarData && (
                 <>
                     <div className="flex flex-col items-center text-center">
-                        <h2 className="text-3xl font-semibold text-gray-900 mb-4">{iftarData.city}</h2>
-                        <div className="text-lg text-gray-600 mb-6">{iftarData.today}</div>
+                        <IconLocation/>
+                        <h2 className="text-4xl font-semibold text-gray-900 mb-4">{iftarData.city}</h2>
+                        <div className="text-xl text-gray-600 mb-6">{iftarData.today}</div>
+
                         <div className="text-4xl font-bold text-green-600 mb-6">
                             {countdown}
                         </div>
                         <div className="flex justify-center items-center w-full">
-                            <div className="border-t-2 border-green-600 w-full max-w-xs py-2">
-                                <p className="text-center text-green-600">Kalan Süre</p>
+                            <div className="border-t-4 border-green-600 w-full max-w-xs py-2">
+                                <p className="text-center text-green-600 font-semibold">İftara Kalan Süre</p>
                             </div>
                         </div>
                     </div>
                     <div className="grid grid-cols-3 gap-4 justify-center mx-auto">
                         {iftarData.times.map((time: string, index: number) => (
-                            <div key={index} className="p-4 bg-gray-50 rounded-lg shadow flex flex-col items-center justify-center">
-                                <div className={`text-md font-semibold ${index === 4 ? "text-orange-500" : "text-gray-800"}`}>{time}</div>
-                                <div className="text-sm text-gray-600">{["Sahur", "Güneş", "Öğle", "İkindi", "İftar", "Teravih"][index]}</div>
+                            <div key={index} className="p-4 bg-gray-50 rounded-lg shadow-lg flex flex-col items-center justify-center hover:scale-105 transition-transform duration-300">
+                                <div className={`text-lg font-semibold ${index === 4 ? "text-orange-500" : "text-gray-800"}`}>{time}</div>
+                                <div className="text-base text-gray-600">{["Sahur", "Güneş", "Öğle", "İkindi", "İftar", "Teravih"][index]}</div>
                             </div>
                         ))}
                     </div>
+
                 </>
             )}
         </div>
     );
+
 };
 
 export default CurrentTimeAndIftarCountdown;
