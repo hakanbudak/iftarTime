@@ -22,7 +22,6 @@ const CurrentTimeAndIftarCountdown = () => {
             .then((data) => {
                 const cityEnglish = data.city;
                 const cityTurkish = translateCityName(cityEnglish);
-                console.log(data)
 
                 return fetch(`https://namaz-vakti.vercel.app/api/timesFromPlace?country=Turkey&region=${cityTurkish}&city=${cityTurkish}&date=${formattedToday}&days=1&timezoneOffset=180&calculationMethod=Turkey`);
             })
@@ -45,10 +44,8 @@ const CurrentTimeAndIftarCountdown = () => {
     const startCountdown = (iftarTime: string) => {
         const updateCountdown = () => {
             const now = new Date();
-            const year = now.getFullYear();
-            const month = now.getMonth();
-            const day = now.getDate();
-            const iftarDate = new Date(`${year}-${month + 1}-${day} ${iftarTime}`);
+            const iftarTimeArr = iftarTime.split(/[- :]/);
+            const iftarDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(iftarTimeArr[0]), parseInt(iftarTimeArr[1]), iftarTimeArr.length > 2 ? parseInt(iftarTimeArr[2]) : 0);
 
             const difference = iftarDate.getTime() - now.getTime();
 
@@ -67,6 +64,7 @@ const CurrentTimeAndIftarCountdown = () => {
 
         return () => clearInterval(timer);
     };
+
 
 
     return (
