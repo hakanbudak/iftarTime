@@ -17,11 +17,12 @@ const CurrentTimeAndIftarCountdown = () => {
 
         const todayForDisplay = new Date().toISOString().split('T')[0];
 
-        fetch(`http://ip-api.com/json/?fields=city`)
+        fetch(`https://get.geojs.io/v1/ip/geo.json`)
             .then((response) => response.json())
             .then((data) => {
                 const cityEnglish = data.city;
                 const cityTurkish = translateCityName(cityEnglish);
+                console.log(data)
 
                 return fetch(`https://namaz-vakti.vercel.app/api/timesFromPlace?country=Turkey&region=${cityTurkish}&city=${cityTurkish}&date=${formattedToday}&days=1&timezoneOffset=180&calculationMethod=Turkey`);
             })
