@@ -76,7 +76,7 @@ const CurrentTimeAndIftarCountdown = () => {
                         <h2 className="text-4xl font-semibold text-gray-900 mb-4">{iftarData.city}</h2>
                         <div className="text-xl text-gray-600 mb-6">{iftarData.today}</div>
 
-                        <div className="text-4xl font-bold text-green-600 mb-6">
+                        <div className="text-2xl sm:text-4xl font-bold text-green-600 mb-4 sm:mb-6">
                             {countdown}
                         </div>
                         <div className="flex justify-center items-center w-full">
