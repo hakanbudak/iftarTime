@@ -44,7 +44,7 @@ const CurrentTimeAndIftarCountdown = () => {
                         const [year, month, day] = date.split('-').map(Number);
                         const dateObj = new Date(year, month - 1, day);
                         dateObj.setDate(dateObj.getDate() + 1);
-                        return `${dateObj.getDate().toString().padStart(2, '0')}-${(dateObj.getMonth() + 1).toString().padStart(2, '0')}-${dateObj.getFullYear()}`;
+                        return `${dateObj.getDate().toString().padStart(2, '0')}/${(dateObj.getMonth() + 1).toString().padStart(2, '0')}/${dateObj.getFullYear()}`;
                     });
 
                     setDates(datesArray);
