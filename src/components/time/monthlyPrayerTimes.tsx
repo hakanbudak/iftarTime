@@ -49,7 +49,9 @@ const MonthlyPrayerTimes = ({ monthlyTimes, dates }:Props) => {
                             </tr>
                         ))
                     ) : (
-                        <tr><td className="text-center py-5">Yükleniyor...</td></tr>
+                        <tr>
+                            <td className="text-center py-5">Yükleniyor...</td>
+                        </tr>
                     )}
                     </tbody>
                 </table>

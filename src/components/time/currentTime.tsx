@@ -32,7 +32,7 @@ const CurrentTimeAndIftarCountdown = () => {
             .then(response => response.json())
             .then(data => {
                 const times = data.times[formattedToday];
-                if(times && times.length > 4) {
+                if (times && times.length > 4) {
                     setIftarData({
                         city: data.place.city,
                         iftarTime: times[4],
