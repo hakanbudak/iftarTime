@@ -106,7 +106,7 @@ const CurrentTimeAndIftarCountdown = () => {
                         {iftarData.times.map((time: string, index: number) => (
                             <div key={index} className="p-4 bg-gray-50 rounded-lg shadow-lg flex flex-col items-center justify-center hover:scale-105 transition-transform duration-300">
                                 <div className={`text-lg font-semibold ${index === 4 ? "text-orange-500" : "text-gray-800"}`}>{time}</div>
-                                <div className="text-base text-gray-600">{["Sahur", "Güneş", "Öğle", "İkindi", "İftar", "Teravih"][index]}</div>
+                                <div className="text-base text-gray-600">{["Sahur", "Güneş", "Öğle", "İkindi", "İftar", "Yatsı"][index]}</div>
                             </div>
                         ))}
                     </div>

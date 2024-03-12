@@ -2,7 +2,7 @@ import CurrentTimeAndIftarCountdown from "@/components/time/currentTime";
 
 export default function Home() {
   return (
-      <main className="bg-gray-100 min-h-screen flex items-center justify-center">
+      <main className="bg-gray-100 min-h-screen flex items-center justify-center px-5 py-5">
        <CurrentTimeAndIftarCountdown/>
       </main>
   );

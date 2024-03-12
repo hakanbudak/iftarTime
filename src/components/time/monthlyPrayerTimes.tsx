@@ -15,7 +15,7 @@ const MonthlyPrayerTimes = ({ monthlyTimes, startDay }:Props) => {
                             Gün
                         </th>
                         <th className="px-2 sm:px-5 py-2 sm:py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            Sahur
+                            Imsak
                         </th>
                         <th className="px-2 sm:px-5 py-2 sm:py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                             Güneş
@@ -27,10 +27,10 @@ const MonthlyPrayerTimes = ({ monthlyTimes, startDay }:Props) => {
                             İkindi
                         </th>
                         <th className="px-2 sm:px-5 py-2 sm:py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            İftar
+                            Akşam
                         </th>
                         <th className="px-2 sm:px-5 py-2 sm:py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            Teravih
+                            Yatsı
                         </th>
                     </tr>
                     </thead>
