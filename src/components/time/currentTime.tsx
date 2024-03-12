@@ -7,7 +7,7 @@ const CurrentTimeAndIftarCountdown = () => {
     const [iftarData, setIftarData] = useState<any>(null);
     const [countdown, setCountdown] = useState<string>('');
     const [monthlyTimes, setMonthlyTimes] = useState<string[][]>([]);
-    const [startDay, setStartDay] = useState<number>(0);
+    const [dates, setDates] = useState<string[]>([]);
 
     function translateCityName(cityName: string): string {
         return cityNamesMap[cityName] || cityName;
@@ -40,11 +40,14 @@ const CurrentTimeAndIftarCountdown = () => {
                         today: todayForDisplay
                     });
                     startCountdown(times[4]);
-                    const firstDateKey = Object.keys(times)[0];
-                    const startDayDate = new Date(firstDateKey);
-                    const startDay = startDayDate.getDate();
+                    const datesArray = Object.keys(data.times).map(date => {
+                        const [year, month, day] = date.split('-').map(Number);
+                        const dateObj = new Date(year, month - 1, day);
+                        dateObj.setDate(dateObj.getDate() + 1);
+                        return `${dateObj.getDate().toString().padStart(2, '0')}-${(dateObj.getMonth() + 1).toString().padStart(2, '0')}-${dateObj.getFullYear()}`;
+                    });
 
-                    setStartDay(startDay);
+                    setDates(datesArray);
 
                     const monthlyData = Object.values(data.times).map((dayTimes: any) => {
                         if (Array.isArray(dayTimes) && dayTimes.every(time => typeof time === 'string')) {
@@ -112,7 +115,7 @@ const CurrentTimeAndIftarCountdown = () => {
                     </div>
                 </>
             )}
-            <MonthlyPrayerTimes monthlyTimes={monthlyTimes} startDay={startDay} />
+            <MonthlyPrayerTimes monthlyTimes={monthlyTimes} dates={dates} />
         </div>
     );
 

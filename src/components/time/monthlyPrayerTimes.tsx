@@ -1,9 +1,9 @@
 import React from 'react';
 interface Props {
     monthlyTimes: string[][];
-    startDay: number;
+    dates: string[]
 }
-const MonthlyPrayerTimes = ({ monthlyTimes, startDay }:Props) => {
+const MonthlyPrayerTimes = ({ monthlyTimes, dates }:Props) => {
     return (
         <div className="bg-white shadow-2xl rounded-2xl p-4 sm:p-8 max-w-full sm:max-w-5xl w-full mx-auto">
             <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 my-4">Namaz Vakitleri</h3>
@@ -39,7 +39,7 @@ const MonthlyPrayerTimes = ({ monthlyTimes, startDay }:Props) => {
                         monthlyTimes.map((day, index) => (
                             <tr key={index} className="border-b border-gray-200">
                                 <td className="px-2 sm:px-5 py-4 text-sm bg-white">
-                                    {startDay + index}
+                                    {dates[index]}
                                 </td>
                                 {day.map((time, idx) => (
                                     <td key={idx} className="px-2 sm:px-5 py-4 text-sm bg-white">
