@@ -27,7 +27,7 @@ const CurrentTimeAndIftarCountdown = () => {
                 const cityEnglish = data.city;
                 const cityTurkish = translateCityName(cityEnglish);
 
-                return fetch(`https://namaz-vakti.vercel.app/api/timesFromPlace?country=Turkey&region=${cityTurkish}&city=${cityTurkish}&date=${formattedToday}&days=30&timezoneOffset=180&calculationMethod=Turkey`);
+                return fetch(`https://vakit.vercel.app/api/timesFromPlace?country=Turkey&region=${cityTurkish}&city=${cityTurkish}&date=${formattedToday}&days=30&timezoneOffset=180&calculationMethod=Turkey`);
             })
             .then(response => response.json())
             .then(data => {
