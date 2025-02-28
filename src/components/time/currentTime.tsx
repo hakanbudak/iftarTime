@@ -88,28 +88,34 @@ const CurrentTimeAndIftarCountdown = () => {
     };
 
     return (
-        <div className="bg-white shadow-2xl rounded-2xl p-8 max-w-5xl w-full mx-auto">
+        <div className="bg-white shadow-2xl rounded-2xl p-4 sm:p-8 max-w-5xl w-full mx-4 sm:mx-auto">
             {iftarData && (
                 <>
                     <div className="flex flex-col items-center text-center">
-                        <IconLocation/>
-                        <h2 className="text-4xl font-semibold text-gray-900 mb-4">{iftarData.city}</h2>
-                        <div className="text-xl text-gray-600 mb-6">{iftarData.today}</div>
+                        <IconLocation className="w-8 h-8 sm:w-12 sm:h-12"/>
+                        <h2 className="text-2xl sm:text-4xl font-semibold text-gray-900 mt-2 mb-2 sm:mb-4">{iftarData.city}</h2>
+                        <div className="text-sm sm:text-xl text-gray-600 mb-4 sm:mb-6">{iftarData.today}</div>
 
-                        <div className="text-2xl sm:text-4xl font-bold text-green-600 mb-4 sm:mb-6">
+                        <div className="text-lg sm:text-2xl md:text-4xl font-bold text-green-600 mb-4 sm:mb-6">
                             {countdown}
                         </div>
                         <div className="flex justify-center items-center w-full">
-                            <div className="border-t-4 border-green-600 w-full max-w-xs py-2">
-                                <p className="text-center text-green-600 font-semibold">İftara Kalan Süre</p>
+                            <div className="border-t-2 sm:border-t-4 border-green-600 w-full max-w-xs py-1 sm:py-2">
+                                <p className="text-center text-sm sm:text-base text-green-600 font-semibold">İftara Kalan Süre</p>
                             </div>
                         </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-4 justify-center mx-auto">
+
+                    {/* Responsive grid düzeni */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4 mt-6">
                         {iftarData.times.map((time: string, index: number) => (
-                            <div key={index} className="p-4 bg-gray-50 rounded-lg shadow-lg flex flex-col items-center justify-center hover:scale-105 transition-transform duration-300">
-                                <div className={`text-lg font-semibold ${index === 4 ? "text-orange-500" : "text-gray-800"}`}>{time}</div>
-                                <div className="text-base text-gray-600">{["Sahur", "Güneş", "Öğle", "İkindi", "İftar", "Yatsı"][index]}</div>
+                            <div key={index} className="p-2 sm:p-4 bg-gray-50 rounded-lg shadow-lg flex flex-col items-center justify-center hover:scale-105 transition-transform duration-300">
+                                <div className={`text-base sm:text-lg font-semibold ${index === 4 ? "text-orange-500" : "text-gray-800"}`}>
+                                    {time}
+                                </div>
+                                <div className="text-xs sm:text-base text-gray-600">
+                                    {["Sahur", "Güneş", "Öğle", "İkindi", "İftar", "Yatsı"][index]}
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -118,7 +124,6 @@ const CurrentTimeAndIftarCountdown = () => {
             <MonthlyPrayerTimes monthlyTimes={monthlyTimes} dates={dates} />
         </div>
     );
-
 };
 
 export default CurrentTimeAndIftarCountdown;
