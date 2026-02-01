@@ -1,23 +1,31 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { IftarData } from '@/types';
 
 export const useNotifications = (iftarData: IftarData | null) => {
-    useEffect(() => {
-        if (!('Notification' in window)) {
-            console.log('This browser does not support desktop notification');
-            return;
-        }
+    const [permission, setPermission] = useState<NotificationPermission>('default');
 
-        if (Notification.permission !== 'denied') {
-            Notification.requestPermission();
+    useEffect(() => {
+        if (typeof window !== 'undefined' && 'Notification' in window) {
+            setPermission(Notification.permission);
         }
     }, []);
+
+    const requestPermission = async () => {
+        if (!('Notification' in window)) return;
+
+        try {
+            const result = await Notification.requestPermission();
+            setPermission(result);
+        } catch (error) {
+            console.error('Notification permission error:', error);
+        }
+    };
 
     useEffect(() => {
         if (!iftarData) return;
 
         const checkTime = () => {
-            if (Notification.permission !== 'granted') return;
+            if (permission !== 'granted') return;
 
             const now = new Date();
             const iftarTimeArr = iftarData.iftarTime.split(/[- :]/);
@@ -44,5 +52,7 @@ export const useNotifications = (iftarData: IftarData | null) => {
 
         const timer = setInterval(checkTime, 60000);
         return () => clearInterval(timer);
-    }, [iftarData]);
+    }, [iftarData, permission]);
+
+    return { permission, requestPermission };
 };

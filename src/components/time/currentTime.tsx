@@ -7,6 +7,8 @@ import SimpleCard from '@/components/layout/SimpleCard';
 import { useNotifications } from '@/hooks/useNotifications';
 import VerseCard from '@/components/content/VerseCard';
 import { cityNamesMap } from '@/enums';
+import NotificationButton from '@/components/layout/NotificationButton';
+import PwaInstallButton from '@/components/layout/PwaInstallButton';
 
 interface Props {
     initialCity?: string;
@@ -16,7 +18,7 @@ const CurrentTimeAndIftarCountdown = ({ initialCity }: Props) => {
     const { city, changeCity, loading: locationLoading } = useLocation(initialCity);
     const { data: iftarData, monthlyData, dates, loading: timesLoading, error } = usePrayerTimes(city);
 
-    useNotifications(iftarData);
+    const { permission, requestPermission } = useNotifications(iftarData);
 
     const [countdown, setCountdown] = useState<string>('');
     const [targetLabel, setTargetLabel] = useState<string>('İFTARA KALAN SÜRE');
@@ -220,13 +222,18 @@ const CurrentTimeAndIftarCountdown = ({ initialCity }: Props) => {
                 <SimpleCard className="relative overflow-visible text-center !p-10 border-t-8 border-primary-500">
                     <div className="flex flex-col items-center z-10 relative">
                         {/* Greeting & Ramadan Progress */}
-                        <div className="w-full flex justify-between items-center mb-6 px-2 text-sm text-primary-600 font-medium">
+                        <div className="w-full flex justify-between items-center mb-6 px-2 text-sm text-primary-600 font-medium flex-wrap gap-2">
                             <div className="flex items-center gap-1">
                                 <span>🌙</span>
                                 <span>{ramadanDay ? `Ramazan'ın ${ramadanDay}. Günü` : 'Ramazan Bekleniyor'}</span>
                             </div>
-                            <div className="italic opacity-80">{greeting}</div>
+                            <div className="flex items-center gap-2">
+                                <NotificationButton permission={permission} onRequestPermission={requestPermission} />
+                                <PwaInstallButton />
+                            </div>
                         </div>
+
+                        <div className="italic opacity-80 mb-4">{greeting}</div>
 
                         <div className="relative mb-4" ref={dropdownRef}>
                             <button
