@@ -10,14 +10,14 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          500: '#047857', // Emerald 700 - Main Green
-          600: '#065f46', // Emerald 800 - Darker Green
+          500: '#047857',
+          600: '#065f46',
         },
         accent: {
-          500: '#d4a373', // Gold/Sand
+          500: '#d4a373',
           600: '#b08968',
         },
-        background: '#f8fafc', // Slate 50 - Very soft white/grey
+        background: '#f8fafc',
       },
       fontFamily: {
         sans: ['system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],

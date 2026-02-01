@@ -27,7 +27,6 @@ export const useNotifications = (iftarData: IftarData | null) => {
             const diff = iftarDate.getTime() - now.getTime();
             const diffMinutes = Math.floor(diff / 1000 / 60);
 
-            // Notify 15 minutes before
             if (diffMinutes === 15) {
                 new Notification('İftar Vaktine 15 Dakika Kaldı!', {
                     body: `${iftarData.city} için iftar vakti yaklaşıyor.`,
@@ -35,8 +34,7 @@ export const useNotifications = (iftarData: IftarData | null) => {
                 });
             }
 
-            // Notify at Iftar
-            if (diffMinutes === 0 && diff > 0 && diff < 60000) { // Within the exact minute
+            if (diffMinutes === 0 && diff > 0 && diff < 60000) {
                 new Notification('Hayırlı İftarlar!', {
                     body: `${iftarData.city} için iftar vakti girdi.`,
                     icon: '/icon.png'
@@ -44,7 +42,7 @@ export const useNotifications = (iftarData: IftarData | null) => {
             }
         };
 
-        const timer = setInterval(checkTime, 60000); // Check every minute
+        const timer = setInterval(checkTime, 60000);
         return () => clearInterval(timer);
     }, [iftarData]);
 };

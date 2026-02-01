@@ -20,6 +20,6 @@ export interface IftarData {
   city: string;
   iftarTime: string;
   sahurTime: string;
-  times: string[]; // [Sahur, Güneş, Öğle, İkindi, İftar, Yatsı]
+  times: string[];
   today: string;
 }

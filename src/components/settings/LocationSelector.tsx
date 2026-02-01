@@ -10,7 +10,6 @@ interface LocationSelectorProps {
 
 const LocationSelector = ({ currentCity, onCityChange, onClose }: LocationSelectorProps) => {
     const cities = Object.values(cityNamesMap).sort();
-    // Ensure we have a unique list in case of duplicates
     const uniqueCities = Array.from(new Set(cities));
 
     return (

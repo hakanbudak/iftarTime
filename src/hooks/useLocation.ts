@@ -9,7 +9,6 @@ export const useLocation = () => {
     const hasFetched = useRef(false);
 
     useEffect(() => {
-        // Try to get from localStorage first
         const savedCity = localStorage.getItem('selectedCity');
         if (savedCity) {
             setCity(savedCity);
@@ -20,15 +19,12 @@ export const useLocation = () => {
         if (hasFetched.current) return;
         hasFetched.current = true;
 
-        // If not, fetch from IP
         fetch('https://get.geojs.io/v1/ip/geo.json')
             .then((response) => response.json())
             .then((data) => {
                 const cityEnglish = data.city;
                 const cityTurkish = cityNamesMap[cityEnglish] || cityEnglish || DEFAULT_CITY;
                 setCity(cityTurkish);
-                // We don't save IP-detected city to localStorage automatically to allow re-detect if they travel, 
-                // but we could. For now, let's keep it ephemeral unless they explicitly select it.
             })
             .catch((error) => {
                 console.error('Location fetch error:', error);

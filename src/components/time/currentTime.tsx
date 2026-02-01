@@ -15,6 +15,10 @@ const CurrentTimeAndIftarCountdown = () => {
     useNotifications(iftarData);
 
     const [countdown, setCountdown] = useState<string>('');
+    const [targetLabel, setTargetLabel] = useState<string>('İFTARA KALAN SÜRE');
+    const [greeting, setGreeting] = useState<string>('');
+    const [ramadanDay, setRamadanDay] = useState<number | null>(null);
+
     const sortedCities = React.useMemo(() => {
         return Array.from(new Set(Object.values(cityNamesMap))).sort();
     }, []);
@@ -25,11 +29,10 @@ const CurrentTimeAndIftarCountdown = () => {
 
     const filteredCities = React.useMemo(() => {
         return sortedCities.filter(c =>
-            c.toLowerCase().includes(searchTerm.toLowerCase())
+            c.toLocaleLowerCase('tr').includes(searchTerm.toLocaleLowerCase('tr'))
         );
     }, [sortedCities, searchTerm]);
 
-    // Close dropdown when outside click
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -40,24 +43,82 @@ const CurrentTimeAndIftarCountdown = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Reset search when dropdown closes
     useEffect(() => {
         if (!isDropdownOpen) {
             setSearchTerm('');
         }
     }, [isDropdownOpen]);
 
-    // Countdown logic
     useEffect(() => {
-        if (!iftarData?.iftarTime) return;
+        const now = new Date();
+        const ramadanStart = new Date(2026, 1, 19);
+
+        const diffTime = now.getTime() - ramadanStart.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays > 0 && diffDays <= 30) {
+            setRamadanDay(diffDays);
+        } else if (diffDays === 0) {
+            setRamadanDay(1);
+        } else {
+            setRamadanDay(null);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!iftarData?.iftarTime || !iftarData?.sahurTime) return;
 
         const updateCountdown = () => {
             const now = new Date();
-            const iftarTimeArr = iftarData.iftarTime.split(/[- :]/);
-            const iftarDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(),
-                parseInt(iftarTimeArr[0]), parseInt(iftarTimeArr[1]), 0);
 
-            const difference = iftarDate.getTime() - now.getTime();
+            const parseTime = (timeStr: string) => {
+                const [hours, minutes] = timeStr.split(/[- :]/).map(Number);
+                const date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0);
+                return date;
+            };
+
+            const iftarDate = parseTime(iftarData.iftarTime);
+            const sahurDate = parseTime(iftarData.sahurTime);
+
+            let targetDate = iftarDate;
+            let label = 'İFTARA KALAN SÜRE';
+            let nextGreeting = '';
+
+            const hour = now.getHours();
+
+            if (now < sahurDate) {
+                targetDate = sahurDate;
+                label = 'SAHURA KALAN SÜRE';
+                nextGreeting = 'Hayırlı Sahurlar, Bereketli Olsun';
+            }
+            else if (now >= sahurDate && now < iftarDate) {
+                targetDate = iftarDate;
+                label = 'İFTARA KALAN SÜRE';
+                if (targetDate.getTime() - now.getTime() < 1000 * 60 * 60) {
+                    nextGreeting = 'Sabrın sonu selamettir, az kaldı...';
+                } else if (hour >= 11 && hour < 17) {
+                    nextGreeting = 'Hayırlı Günler, Kolaylıklar Dilerim';
+                } else {
+                    nextGreeting = 'Hayırlı Sabahlar';
+                }
+            }
+            else {
+                const tomorrowSahur = new Date(sahurDate);
+                tomorrowSahur.setDate(tomorrowSahur.getDate() + 1);
+                targetDate = tomorrowSahur;
+
+                label = 'SAHURA KALAN SÜRE';
+                nextGreeting = 'Allah Kabul Etsin, Hayırlı İftarlar';
+
+                if (hour >= 22 || hour < 4) {
+                    nextGreeting = 'Hayırlı Geceler, Allah Rahatlık Versin';
+                }
+            }
+
+            setTargetLabel(label);
+            setGreeting(nextGreeting);
+
+            const difference = targetDate.getTime() - now.getTime();
 
             if (difference > 0) {
                 const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
@@ -65,7 +126,7 @@ const CurrentTimeAndIftarCountdown = () => {
                 const seconds = Math.floor((difference / 1000) % 60);
                 setCountdown(`${hours} saat ${minutes} dakika ${seconds} saniye`);
             } else {
-                setCountdown('Hayırlı İftarlar!');
+                setCountdown('Vakit Geldi...');
             }
         };
 
@@ -146,6 +207,15 @@ const CurrentTimeAndIftarCountdown = () => {
             {iftarData ? (
                 <SimpleCard className="relative overflow-visible text-center !p-10 border-t-8 border-primary-500">
                     <div className="flex flex-col items-center z-10 relative">
+                        {/* Greeting & Ramadan Progress */}
+                        <div className="w-full flex justify-between items-center mb-6 px-2 text-sm text-primary-600 font-medium">
+                            <div className="flex items-center gap-1">
+                                <span>🌙</span>
+                                <span>{ramadanDay ? `Ramazan'ın ${ramadanDay}. Günü` : 'Ramazan Bekleniyor'}</span>
+                            </div>
+                            <div className="italic opacity-80">{greeting}</div>
+                        </div>
+
                         <div className="relative mb-4" ref={dropdownRef}>
                             <button
                                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -206,7 +276,7 @@ const CurrentTimeAndIftarCountdown = () => {
                             <div className="text-3xl sm:text-6xl font-bold text-gray-800 mb-2 tabular-nums tracking-tight leading-tight">
                                 {countdown}
                             </div>
-                            <p className="text-center text-primary-600 font-semibold uppercase tracking-widest text-sm sm:text-lg">İftara Kalan Süre</p>
+                            <p className="text-center text-primary-600 font-semibold uppercase tracking-widest text-sm sm:text-lg">{targetLabel}</p>
                         </div>
 
                         {/* Minimal Grid for Times */}
