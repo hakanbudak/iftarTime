@@ -8,8 +8,12 @@ import { useNotifications } from '@/hooks/useNotifications';
 import VerseCard from '@/components/content/VerseCard';
 import { cityNamesMap } from '@/enums';
 
-const CurrentTimeAndIftarCountdown = () => {
-    const { city, changeCity, loading: locationLoading } = useLocation();
+interface Props {
+    initialCity?: string;
+}
+
+const CurrentTimeAndIftarCountdown = ({ initialCity }: Props) => {
+    const { city, changeCity, loading: locationLoading } = useLocation(initialCity);
     const { data: iftarData, monthlyData, dates, loading: timesLoading, error } = usePrayerTimes(city);
 
     useNotifications(iftarData);
@@ -83,6 +87,7 @@ const CurrentTimeAndIftarCountdown = () => {
             let targetDate = iftarDate;
             let label = 'İFTARA KALAN SÜRE';
             let nextGreeting = '';
+            let newBg = 'bg-gray-50'; // Default
 
             const hour = now.getHours();
 
@@ -90,16 +95,20 @@ const CurrentTimeAndIftarCountdown = () => {
                 targetDate = sahurDate;
                 label = 'SAHURA KALAN SÜRE';
                 nextGreeting = 'Hayırlı Sahurlar, Bereketli Olsun';
+                newBg = 'bg-gradient-to-b from-indigo-50 to-white'; // Night/Sahur
             }
             else if (now >= sahurDate && now < iftarDate) {
                 targetDate = iftarDate;
                 label = 'İFTARA KALAN SÜRE';
                 if (targetDate.getTime() - now.getTime() < 1000 * 60 * 60) {
                     nextGreeting = 'Sabrın sonu selamettir, az kaldı...';
+                    newBg = 'bg-gradient-to-b from-orange-50 to-white'; // Evening approach
                 } else if (hour >= 11 && hour < 17) {
                     nextGreeting = 'Hayırlı Günler, Kolaylıklar Dilerim';
+                    newBg = 'bg-gradient-to-b from-amber-50/50 to-white'; // Day
                 } else {
                     nextGreeting = 'Hayırlı Sabahlar';
+                    newBg = 'bg-gradient-to-b from-sky-50/50 to-white'; // Morning
                 }
             }
             else {
@@ -112,6 +121,9 @@ const CurrentTimeAndIftarCountdown = () => {
 
                 if (hour >= 22 || hour < 4) {
                     nextGreeting = 'Hayırlı Geceler, Allah Rahatlık Versin';
+                    newBg = 'bg-gradient-to-b from-slate-100 to-white'; // Late night
+                } else {
+                    newBg = 'bg-gradient-to-b from-indigo-50/50 to-white'; // After Iftar
                 }
             }
 

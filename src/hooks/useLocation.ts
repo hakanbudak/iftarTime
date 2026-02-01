@@ -3,12 +3,18 @@ import { cityNamesMap } from '@/enums';
 
 const DEFAULT_CITY = 'İstanbul';
 
-export const useLocation = () => {
-    const [city, setCity] = useState<string>('');
-    const [loading, setLoading] = useState<boolean>(true);
+export const useLocation = (initialCity?: string) => {
+    const [city, setCity] = useState<string>(initialCity || '');
+    const [loading, setLoading] = useState<boolean>(!initialCity);
     const hasFetched = useRef(false);
 
     useEffect(() => {
+        if (initialCity) {
+            setCity(initialCity);
+            setLoading(false);
+            return;
+        }
+
         const savedCity = localStorage.getItem('selectedCity');
         if (savedCity) {
             setCity(savedCity);
@@ -33,7 +39,7 @@ export const useLocation = () => {
             .finally(() => {
                 setLoading(false);
             });
-    }, []);
+    }, [initialCity]);
 
     const changeCity = (newCity: string) => {
         setCity(newCity);
