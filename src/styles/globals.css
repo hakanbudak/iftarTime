@@ -2,3 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+    --foreground-rgb: 30, 41, 59;
+    /* Slate 800 */
+    --background-start-rgb: 248, 250, 252;
+    /* Slate 50 */
+    --background-end-rgb: 241, 245, 249;
+    /* Slate 100 */
+}
+
+body {
+    color: rgb(var(--foreground-rgb));
+    background: rgb(var(--background-start-rgb));
+    min-height: 100vh;
+}
+
+@layer utilities {
+    .card-minimal {
+        @apply bg-white rounded-xl shadow-sm border border-gray-100;
+    }
+}
