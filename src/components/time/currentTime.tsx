@@ -222,12 +222,12 @@ const CurrentTimeAndIftarCountdown = ({ initialCity }: Props) => {
                 <SimpleCard className="relative overflow-visible text-center !p-10 border-t-8 border-primary-500">
                     <div className="flex flex-col items-center z-10 relative">
                         {/* Greeting & Ramadan Progress */}
-                        <div className="w-full flex justify-between items-center mb-6 px-2 text-sm text-primary-600 font-medium flex-wrap gap-2">
-                            <div className="flex items-center gap-1">
-                                <span>🌙</span>
-                                <span>{ramadanDay ? `Ramazan'ın ${ramadanDay}. Günü` : 'Ramazan Bekleniyor'}</span>
+                        <div className="w-full flex justify-between items-center mb-6 px-2 text-sm text-primary-600 font-medium flex-nowrap gap-2">
+                            <div className="flex items-center gap-1 min-w-0">
+                                <span className="flex-shrink-0">🌙</span>
+                                <span className="truncate">{ramadanDay ? `Ramazan'ın ${ramadanDay}. Günü` : 'Ramazan Bekleniyor'}</span>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-shrink-0">
                                 <NotificationButton permission={permission} onRequestPermission={requestPermission} />
                                 <PwaInstallButton />
                             </div>
