@@ -10,8 +10,14 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
+          50: '#ecfdf5',
+          100: '#d1fae5',
+          200: '#a7f3d0',
+          300: '#6ee7b7',
+          400: '#34d399',
           500: '#047857',
           600: '#065f46',
+          700: '#064e3b',
         },
         accent: {
           500: '#d4a373',
