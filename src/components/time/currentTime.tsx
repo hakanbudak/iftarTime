@@ -6,7 +6,7 @@ import { usePrayerTimes } from '@/hooks/usePrayerTimes';
 import SimpleCard from '@/components/layout/SimpleCard';
 import { useNotifications } from '@/hooks/useNotifications';
 import VerseCard from '@/components/content/VerseCard';
-import { cityNamesMap } from '@/enums';
+import { turkeyLocations, turkeyProvinces } from '@/data/turkeyLocations';
 import NotificationButton from '@/components/layout/NotificationButton';
 import PwaInstallButton from '@/components/layout/PwaInstallButton';
 import { useAdhan } from '@/hooks/useAdhan';
@@ -17,8 +17,8 @@ interface Props {
 }
 
 const CurrentTimeAndIftarCountdown = ({ initialCity }: Props) => {
-    const { city, changeCity, loading: locationLoading } = useLocation(initialCity);
-    const { data: iftarData, monthlyData, dates, loading: timesLoading, error } = usePrayerTimes(city);
+    const { city, district, coords, locationForAPI, changeCity, changeDistrict, loading: locationLoading } = useLocation(initialCity);
+    const { data: iftarData, monthlyData, dates, loading: timesLoading, error } = usePrayerTimes(coords, locationForAPI);
 
     const { permission, requestPermission } = useNotifications(iftarData);
     const { isPlaying, stopAdhan } = useAdhan(iftarData);
@@ -28,24 +28,36 @@ const CurrentTimeAndIftarCountdown = ({ initialCity }: Props) => {
     const [greeting, setGreeting] = useState<string>('');
     const [ramadanDay, setRamadanDay] = useState<number | null>(null);
 
-    const sortedCities = React.useMemo(() => {
-        return Array.from(new Set(Object.values(cityNamesMap))).sort();
-    }, []);
-
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
-    const dropdownRef = React.useRef<HTMLDivElement>(null);
+    const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false);
+    const [citySearchTerm, setCitySearchTerm] = useState('');
+    const cityDropdownRef = React.useRef<HTMLDivElement>(null);
+    const [isDistrictDropdownOpen, setIsDistrictDropdownOpen] = useState(false);
+    const [districtSearchTerm, setDistrictSearchTerm] = useState('');
+    const districtDropdownRef = React.useRef<HTMLDivElement>(null);
 
     const filteredCities = React.useMemo(() => {
-        return sortedCities.filter(c =>
-            c.toLocaleLowerCase('tr').includes(searchTerm.toLocaleLowerCase('tr'))
+        return turkeyProvinces.filter(c =>
+            c.toLocaleLowerCase('tr').includes(citySearchTerm.toLocaleLowerCase('tr'))
         );
-    }, [sortedCities, searchTerm]);
+    }, [citySearchTerm]);
+
+    const availableDistricts = React.useMemo(() => {
+        return turkeyLocations[city] || [];
+    }, [city]);
+
+    const filteredDistricts = React.useMemo(() => {
+        return availableDistricts.filter(d =>
+            d.toLocaleLowerCase('tr').includes(districtSearchTerm.toLocaleLowerCase('tr'))
+        );
+    }, [availableDistricts, districtSearchTerm]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                setIsDropdownOpen(false);
+            if (cityDropdownRef.current && !cityDropdownRef.current.contains(event.target as Node)) {
+                setIsCityDropdownOpen(false);
+            }
+            if (districtDropdownRef.current && !districtDropdownRef.current.contains(event.target as Node)) {
+                setIsDistrictDropdownOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -53,10 +65,16 @@ const CurrentTimeAndIftarCountdown = ({ initialCity }: Props) => {
     }, []);
 
     useEffect(() => {
-        if (!isDropdownOpen) {
-            setSearchTerm('');
+        if (!isCityDropdownOpen) {
+            setCitySearchTerm('');
         }
-    }, [isDropdownOpen]);
+    }, [isCityDropdownOpen]);
+
+    useEffect(() => {
+        if (!isDistrictDropdownOpen) {
+            setDistrictSearchTerm('');
+        }
+    }, [isDistrictDropdownOpen]);
 
     useEffect(() => {
         const now = new Date();
@@ -164,14 +182,14 @@ const CurrentTimeAndIftarCountdown = ({ initialCity }: Props) => {
         return (
             <SimpleCard className="flex flex-col items-center justify-center min-h-[400px]">
                 <div className="text-xl font-semibold text-red-500 mb-4">{error}</div>
-                <div className="relative">
+                <div className="relative" ref={cityDropdownRef}>
                     <button
-                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        onClick={() => setIsCityDropdownOpen(!isCityDropdownOpen)}
                         className="flex items-center justify-between min-w-[200px] gap-2 bg-primary-50 border border-primary-200 text-gray-700 py-3 px-6 rounded-full focus:outline-none focus:bg-white focus:border-primary-500 transition-all font-medium"
                     >
                         {city || 'Şehir Seçiniz'}
                         <svg
-                            className={`fill-current h-4 w-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+                            className={`fill-current h-4 w-4 transition-transform ${isCityDropdownOpen ? 'rotate-180' : ''}`}
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 20 20"
                         >
@@ -179,14 +197,14 @@ const CurrentTimeAndIftarCountdown = ({ initialCity }: Props) => {
                         </svg>
                     </button>
 
-                    {isDropdownOpen && (
+                    {isCityDropdownOpen && (
                         <div className="absolute z-50 top-full mt-2 w-full bg-white rounded-xl shadow-xl border border-gray-100 max-h-[300px] overflow-hidden animate-fade-in flex flex-col">
                             <div className="p-2 border-b border-gray-100 bg-gray-50/50 sticky top-0 z-10">
                                 <input
                                     type="text"
                                     placeholder="Şehir Ara..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    value={citySearchTerm}
+                                    onChange={(e) => setCitySearchTerm(e.target.value)}
                                     className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary-400 focus:ring-1 focus:ring-primary-200"
                                     autoFocus
                                     onClick={(e) => e.stopPropagation()}
@@ -199,7 +217,7 @@ const CurrentTimeAndIftarCountdown = ({ initialCity }: Props) => {
                                             key={c}
                                             onClick={() => {
                                                 changeCity(c);
-                                                setIsDropdownOpen(false);
+                                                setIsCityDropdownOpen(false);
                                             }}
                                             className={`px-4 py-3 cursor-pointer transition-colors text-left text-sm
                                                 ${c === city ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
@@ -255,56 +273,112 @@ const CurrentTimeAndIftarCountdown = ({ initialCity }: Props) => {
 
                         <div className="italic opacity-80 mb-4">{greeting}</div>
 
-                        <div className="relative mb-4" ref={dropdownRef}>
-                            <button
-                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                className="flex items-center gap-2 text-gray-600 bg-gray-50 hover:bg-gray-100 px-4 py-2 rounded-full transition-all cursor-pointer border border-transparent hover:border-gray-200"
-                            >
-                                <IconLocation className="w-5 h-5 text-primary-500" />
-                                <span className="text-2xl font-bold tracking-tight">{iftarData.city}</span>
-                                <svg
-                                    className={`h-4 w-4 opacity-50 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor"
+                        <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
+                            <div className="relative" ref={cityDropdownRef}>
+                                <button
+                                    onClick={() => setIsCityDropdownOpen(!isCityDropdownOpen)}
+                                    className="flex items-center gap-2 text-gray-600 bg-gray-50 hover:bg-gray-100 px-3 py-2 rounded-full transition-all cursor-pointer border border-transparent hover:border-gray-200"
                                 >
-                                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                                </svg>
-                            </button>
+                                    <IconLocation className="w-4 h-4 text-primary-500" />
+                                    <span className="text-lg font-bold tracking-tight">{city || 'Seçiniz'}</span>
+                                    <svg
+                                        className={`h-3 w-3 opacity-50 transition-transform ${isCityDropdownOpen ? 'rotate-180' : ''}`}
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 20 20"
+                                        fill="currentColor"
+                                    >
+                                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                                    </svg>
+                                </button>
 
-                            {isDropdownOpen && (
-                                <div className="absolute z-50 top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 max-h-[300px] overflow-hidden animate-fade-in text-left flex flex-col">
-                                    <div className="p-2 border-b border-gray-100 bg-gray-50/50 sticky top-0 z-10">
-                                        <input
-                                            type="text"
-                                            placeholder="Şehir Ara..."
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary-400 focus:ring-1 focus:ring-primary-200 bg-white"
-                                            autoFocus
-                                            onClick={(e) => e.stopPropagation()}
-                                        />
+                                {isCityDropdownOpen && (
+                                    <div className="absolute z-50 top-full left-1/2 -translate-x-1/2 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 max-h-[280px] overflow-hidden animate-fade-in text-left flex flex-col">
+                                        <div className="p-2 border-b border-gray-100 bg-gray-50/50 sticky top-0 z-10">
+                                            <input
+                                                type="text"
+                                                placeholder="Şehir Ara..."
+                                                value={citySearchTerm}
+                                                onChange={(e) => setCitySearchTerm(e.target.value)}
+                                                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary-400 focus:ring-1 focus:ring-primary-200 bg-white"
+                                                autoFocus
+                                                onClick={(e) => e.stopPropagation()}
+                                            />
+                                        </div>
+                                        <div className="overflow-y-auto overflow-x-hidden flex-1">
+                                            {filteredCities.length > 0 ? (
+                                                filteredCities.map((c) => (
+                                                    <div
+                                                        key={c}
+                                                        onClick={() => {
+                                                            changeCity(c);
+                                                            setIsCityDropdownOpen(false);
+                                                        }}
+                                                        className={`px-4 py-2.5 cursor-pointer transition-colors text-sm border-b border-gray-50 last:border-0
+                                                            ${c === city ? 'bg-primary-50 text-primary-700 font-bold' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
+                                                        `}
+                                                    >
+                                                        {c}
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="px-4 py-3 text-sm text-gray-400 text-center">Şehir bulunamadı</div>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className="overflow-y-auto overflow-x-hidden flex-1">
-                                        {filteredCities.length > 0 ? (
-                                            filteredCities.map((c) => (
-                                                <div
-                                                    key={c}
-                                                    onClick={() => {
-                                                        changeCity(c);
-                                                        setIsDropdownOpen(false);
-                                                    }}
-                                                    className={`px-4 py-3 cursor-pointer transition-colors text-sm border-b border-gray-50 last:border-0
-                                                        ${c === city ? 'bg-primary-50 text-primary-700 font-bold' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
-                                                    `}
-                                                >
-                                                    {c}
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div className="px-4 py-3 text-sm text-gray-400 text-center">Şehir bulunamadı</div>
-                                        )}
-                                    </div>
+                                )}
+                            </div>
+                            {availableDistricts.length > 0 && (
+                                <div className="relative" ref={districtDropdownRef}>
+                                    <button
+                                        onClick={() => setIsDistrictDropdownOpen(!isDistrictDropdownOpen)}
+                                        className="flex items-center gap-2 text-gray-600 bg-gray-50 hover:bg-gray-100 px-3 py-2 rounded-full transition-all cursor-pointer border border-transparent hover:border-gray-200"
+                                    >
+                                        <span className="text-lg font-bold tracking-tight">{district || 'İlçe Seç'}</span>
+                                        <svg
+                                            className={`h-3 w-3 opacity-50 transition-transform ${isDistrictDropdownOpen ? 'rotate-180' : ''}`}
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 20 20"
+                                            fill="currentColor"
+                                        >
+                                            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                                        </svg>
+                                    </button>
+
+                                    {isDistrictDropdownOpen && (
+                                        <div className="absolute z-50 top-full left-1/2 -translate-x-1/2 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 max-h-[280px] overflow-hidden animate-fade-in text-left flex flex-col">
+                                            <div className="p-2 border-b border-gray-100 bg-gray-50/50 sticky top-0 z-10">
+                                                <input
+                                                    type="text"
+                                                    placeholder="İlçe Ara..."
+                                                    value={districtSearchTerm}
+                                                    onChange={(e) => setDistrictSearchTerm(e.target.value)}
+                                                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary-400 focus:ring-1 focus:ring-primary-200 bg-white"
+                                                    autoFocus
+                                                    onClick={(e) => e.stopPropagation()}
+                                                />
+                                            </div>
+                                            <div className="overflow-y-auto overflow-x-hidden flex-1">
+                                                {filteredDistricts.length > 0 ? (
+                                                    filteredDistricts.map((d) => (
+                                                        <div
+                                                            key={d}
+                                                            onClick={() => {
+                                                                changeDistrict(d);
+                                                                setIsDistrictDropdownOpen(false);
+                                                            }}
+                                                            className={`px-4 py-2.5 cursor-pointer transition-colors text-sm border-b border-gray-50 last:border-0
+                                                                ${d === district ? 'bg-primary-50 text-primary-700 font-bold' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
+                                                            `}
+                                                        >
+                                                            {d}
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="px-4 py-3 text-sm text-gray-400 text-center">İlçe bulunamadı</div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -318,14 +392,11 @@ const CurrentTimeAndIftarCountdown = ({ initialCity }: Props) => {
                             <p className="text-center text-primary-600 font-semibold uppercase tracking-widest text-sm sm:text-lg">{targetLabel}</p>
                         </div>
 
-                        {/* Minimal Grid for Times */}
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4 w-full">
                             {iftarData.times.map((time: string, index: number) => {
                                 const labels = ["İmsak", "Güneş", "Öğle", "İkindi", "İftar", "Yatsı"];
                                 const isSahur = index === 0;
                                 const isIftar = index === 4;
-
-                                // Aktif sayaca göre vurgulama
                                 const isSahurActive = targetLabel === 'SAHURA KALAN SÜRE' && isSahur;
                                 const isIftarActive = targetLabel === 'İFTARA KALAN SÜRE' && isIftar;
                                 const isActive = isSahurActive || isIftarActive;
