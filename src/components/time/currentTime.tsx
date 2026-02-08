@@ -170,13 +170,7 @@ const CurrentTimeAndIftarCountdown = ({ initialCity }: Props) => {
         return () => clearInterval(timer);
     }, [iftarData]);
 
-    if (locationLoading) {
-        return (
-            <SimpleCard className="flex items-center justify-center min-h-[400px]">
-                <div className="text-xl font-medium text-gray-500 animate-pulse">Konum Bulunuyor...</div>
-            </SimpleCard>
-        );
-    }
+    const isLoading = locationLoading || timesLoading;
 
     if (error) {
         return (
@@ -241,6 +235,14 @@ const CurrentTimeAndIftarCountdown = ({ initialCity }: Props) => {
         <div className="w-full mx-auto space-y-8 animate-fade-in max-w-4xl">
             {iftarData ? (
                 <SimpleCard className="relative overflow-visible text-center !p-10 border-t-8 border-primary-500">
+                    {isLoading && (
+                        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center rounded-2xl">
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="w-10 h-10 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin"></div>
+                                <span className="text-primary-600 font-medium text-sm">Güncelleniyor...</span>
+                            </div>
+                        </div>
+                    )}
                     <div className="flex flex-col items-center z-10 relative">
                         {/* Greeting & Ramadan Progress */}
                         <div className="w-full flex justify-between items-center mb-6 px-2 text-sm text-primary-600 font-medium flex-nowrap gap-2">
@@ -419,7 +421,10 @@ const CurrentTimeAndIftarCountdown = ({ initialCity }: Props) => {
                 </SimpleCard>
             ) : (
                 <SimpleCard className="flex items-center justify-center min-h-[300px]">
-                    <div className="text-gray-400">Veriler yükleniyor...</div>
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="w-12 h-12 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin"></div>
+                        <span className="text-primary-600 font-medium">Namaz vakitleri yükleniyor...</span>
+                    </div>
                 </SimpleCard>
             )}
 
