@@ -322,15 +322,22 @@ const CurrentTimeAndIftarCountdown = ({ initialCity }: Props) => {
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4 w-full">
                             {iftarData.times.map((time: string, index: number) => {
                                 const labels = ["İmsak", "Güneş", "Öğle", "İkindi", "İftar", "Yatsı"];
+                                const isSahur = index === 0;
                                 const isIftar = index === 4;
+
+                                // Aktif sayaca göre vurgulama
+                                const isSahurActive = targetLabel === 'SAHURA KALAN SÜRE' && isSahur;
+                                const isIftarActive = targetLabel === 'İFTARA KALAN SÜRE' && isIftar;
+                                const isActive = isSahurActive || isIftarActive;
+
                                 return (
                                     <div key={index}
                                         className={`p-3 sm:p-4 rounded-lg flex flex-col items-center justify-center transition-all
-                                        ${isIftar ? 'bg-primary-500 text-white shadow-md transform scale-105' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'}`}>
-                                        <div className={`text-lg font-bold mb-1 ${isIftar ? 'text-white' : 'text-gray-900'}`}>
+                                        ${isActive ? 'bg-primary-500 text-white shadow-md transform scale-105' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'}`}>
+                                        <div className={`text-lg font-bold mb-1 ${isActive ? 'text-white' : 'text-gray-900'}`}>
                                             {time}
                                         </div>
-                                        <div className={`text-[10px] sm:text-xs uppercase tracking-wider font-medium ${isIftar ? 'text-white/90' : 'text-gray-500'}`}>
+                                        <div className={`text-[10px] sm:text-xs uppercase tracking-wider font-medium ${isActive ? 'text-white/90' : 'text-gray-500'}`}>
                                             {labels[index]}
                                         </div>
                                     </div>
