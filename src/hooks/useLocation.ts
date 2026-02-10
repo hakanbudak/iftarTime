@@ -1,17 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 
 const DEFAULT_CITY = 'İstanbul';
-const DEFAULT_COORDS = { latitude: 41.0082, longitude: 28.9784 }; // İstanbul
+const DEFAULT_COORDS = { latitude: 41.0082, longitude: 28.9784 };
 
 interface Coordinates {
     latitude: number;
     longitude: number;
-}
-
-interface LocationData {
-    city: string;      // İl
-    district: string;  // İlçe
-    coords: Coordinates | null;
 }
 
 export const useLocation = (initialCity?: string) => {
@@ -25,13 +19,10 @@ export const useLocation = (initialCity?: string) => {
         if (initialCity) {
             setCity(initialCity);
             setDistrict('');
-            // initialCity varsa varsayılan koordinat kullan
-            setCoords(DEFAULT_COORDS);
-            setLoading(false);
+            geocodeCity(initialCity);
             return;
         }
 
-        // localStorage'dan kayıtlı konum
         const savedCity = localStorage.getItem('selectedCity');
         const savedDistrict = localStorage.getItem('selectedDistrict');
         const savedLat = localStorage.getItem('selectedLat');
@@ -51,14 +42,37 @@ export const useLocation = (initialCity?: string) => {
         if (hasFetched.current) return;
         hasFetched.current = true;
 
-        // GPS ile konum al
         getLocationWithGPS();
     }, [initialCity]);
 
+    const geocodeCity = async (cityName: string) => {
+        try {
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityName)},Turkey&limit=1`,
+                { headers: { 'User-Agent': 'IftarVaktim/1.0' } }
+            );
+            const data = await response.json();
+            if (data && data.length > 0) {
+                const newCoords = {
+                    latitude: parseFloat(data[0].lat),
+                    longitude: parseFloat(data[0].lon)
+                };
+                setCoords(newCoords);
+                localStorage.setItem('selectedLat', newCoords.latitude.toString());
+                localStorage.setItem('selectedLon', newCoords.longitude.toString());
+            } else {
+                setCoords(DEFAULT_COORDS);
+            }
+        } catch {
+            setCoords(DEFAULT_COORDS);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const getLocationWithGPS = async () => {
-        // Tarayıcı GPS desteği kontrolü
         if (!navigator.geolocation) {
-            console.warn('Geolocation desteklenmiyor, varsayılan konuma geçiliyor');
+            console.warn('Geolocation desteklenmiyor');
             fallbackToDefault();
             return;
         }
@@ -66,22 +80,18 @@ export const useLocation = (initialCity?: string) => {
         navigator.geolocation.getCurrentPosition(
             async (position) => {
                 const { latitude, longitude } = position.coords;
-                // Koordinatları kaydet
                 setCoords({ latitude, longitude });
                 localStorage.setItem('selectedLat', latitude.toString());
                 localStorage.setItem('selectedLon', longitude.toString());
-
-                // Şehir/ilçe adını bulmak için reverse geocode
                 await reverseGeocode(latitude, longitude);
             },
-            (error) => {
-                console.warn('GPS hatası:', error.message);
+            () => {
                 fallbackToDefault();
             },
             {
                 enableHighAccuracy: true,
                 timeout: 10000,
-                maximumAge: 300000 // 5 dakika cache
+                maximumAge: 300000
             }
         );
     };
@@ -89,27 +99,37 @@ export const useLocation = (initialCity?: string) => {
     const reverseGeocode = async (lat: number, lon: number) => {
         try {
             const response = await fetch(
-                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=tr`,
-                {
-                    headers: {
-                        'User-Agent': 'IftarVaktim/1.0'
-                    }
-                }
+                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=tr&zoom=10`,
+                { headers: { 'User-Agent': 'IftarVaktim/1.0' } }
             );
 
             const data = await response.json();
 
             if (data && data.address) {
-                const detectedDistrict = data.address.county || data.address.town || data.address.city_district || '';
-                const detectedCity = data.address.province || data.address.state || data.address.city || DEFAULT_CITY;
+                const addr = data.address;
 
+                // İl tespiti: province > state (province her zaman il adını içerir)
+                const detectedCity = addr.province || addr.state || DEFAULT_CITY;
+
+                // İlçe tespiti: town > county > city_district
+                // Büyükşehirlerde "city" alanı bazen ilçe adını içerir, onu da kontrol et
+                let detectedDistrict = addr.town || addr.county || addr.city_district || '';
+
+                // Eğer city alanı province'dan farklıysa ve ilçe bulunamadıysa, city ilçe olabilir
+                if (!detectedDistrict && addr.city && addr.city !== detectedCity) {
+                    detectedDistrict = addr.city;
+                }
+
+                const cleanCity = detectedCity.replace(/ İli$/i, '').replace(/ Province$/i, '').trim();
                 const cleanDistrict = detectedDistrict.replace(/ İlçesi$/i, '').trim();
 
-                setCity(detectedCity);
+                setCity(cleanCity);
                 setDistrict(cleanDistrict);
 
-                localStorage.setItem('selectedCity', detectedCity);
-                localStorage.setItem('selectedDistrict', cleanDistrict);
+                localStorage.setItem('selectedCity', cleanCity);
+                if (cleanDistrict) {
+                    localStorage.setItem('selectedDistrict', cleanDistrict);
+                }
             } else {
                 setCity(DEFAULT_CITY);
                 setDistrict('');
@@ -130,15 +150,13 @@ export const useLocation = (initialCity?: string) => {
         setLoading(false);
     };
 
-    // Şehir değiştirme - manuel seçimde koordinat Nominatim'den alınır
     const changeCity = async (newCity: string) => {
         setLoading(true);
         setCity(newCity);
-        setDistrict(''); // Şehir değişince ilçe sıfırlanır
+        setDistrict('');
         localStorage.setItem('selectedCity', newCity);
         localStorage.removeItem('selectedDistrict');
 
-        // Şehir için koordinat bul
         try {
             const response = await fetch(
                 `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(newCity)},Turkey&limit=1`,
@@ -161,14 +179,12 @@ export const useLocation = (initialCity?: string) => {
         }
     };
 
-    // İlçe değiştirme
     const changeDistrict = async (newDistrict: string) => {
         setLoading(true);
         setDistrict(newDistrict);
         if (newDistrict) {
             localStorage.setItem('selectedDistrict', newDistrict);
 
-            // İlçe için koordinat bul
             try {
                 const searchQuery = `${newDistrict}, ${city}, Turkey`;
                 const response = await fetch(
@@ -194,7 +210,6 @@ export const useLocation = (initialCity?: string) => {
         setLoading(false);
     };
 
-    // API'ye gönderilecek konum adı (UI için)
     const locationForAPI = district || city;
 
     return {
