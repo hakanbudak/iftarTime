@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import IconLocation from "@/components/icon/IconLocation";
 import MonthlyPrayerTimes from "./monthlyPrayerTimes";
 import { useLocation } from '@/hooks/useLocation';
@@ -11,13 +12,16 @@ import NotificationButton from '@/components/layout/NotificationButton';
 import PwaInstallButton from '@/components/layout/PwaInstallButton';
 import { useAdhan } from '@/hooks/useAdhan';
 import SahurAlarmButton from '@/components/layout/SahurAlarmButton';
+import { getCitySlug, getDistrictSlug } from '@/utils/slugify';
 
 interface Props {
     initialCity?: string;
+    initialDistrict?: string;
 }
 
-const CurrentTimeAndIftarCountdown = ({ initialCity }: Props) => {
-    const { city, district, coords, locationForAPI, changeCity, changeDistrict, loading: locationLoading } = useLocation(initialCity);
+const CurrentTimeAndIftarCountdown = ({ initialCity, initialDistrict }: Props) => {
+    const router = useRouter();
+    const { city, district, coords, locationForAPI, changeCity, changeDistrict, loading: locationLoading } = useLocation(initialCity, initialDistrict);
     const { data: iftarData, monthlyData, dates, loading: timesLoading, error } = usePrayerTimes(coords, locationForAPI);
 
     const { permission, requestPermission } = useNotifications(iftarData);
@@ -63,6 +67,18 @@ const CurrentTimeAndIftarCountdown = ({ initialCity }: Props) => {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    useEffect(() => {
+        if (!city) return;
+        const citySlug = getCitySlug(city);
+        const districtSlug = district ? getDistrictSlug(district) : '';
+        const newPath = districtSlug ? `/${citySlug}/${districtSlug}` : `/${citySlug}`;
+
+        if (router.asPath !== newPath) {
+            router.replace(newPath, undefined, { shallow: true });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [city, district]);
 
     useEffect(() => {
         if (!isCityDropdownOpen) {

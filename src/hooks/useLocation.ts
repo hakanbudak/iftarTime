@@ -8,9 +8,9 @@ interface Coordinates {
     longitude: number;
 }
 
-export const useLocation = (initialCity?: string) => {
+export const useLocation = (initialCity?: string, initialDistrict?: string) => {
     const [city, setCity] = useState<string>(initialCity || '');
-    const [district, setDistrict] = useState<string>('');
+    const [district, setDistrict] = useState<string>(initialDistrict || '');
     const [coords, setCoords] = useState<Coordinates | null>(null);
     const [loading, setLoading] = useState<boolean>(!initialCity);
     const hasFetched = useRef(false);
@@ -18,8 +18,13 @@ export const useLocation = (initialCity?: string) => {
     useEffect(() => {
         if (initialCity) {
             setCity(initialCity);
-            setDistrict('');
-            geocodeCity(initialCity);
+            if (initialDistrict) {
+                setDistrict(initialDistrict);
+                geocodeLocation(`${initialDistrict}, ${initialCity}, Turkey`);
+            } else {
+                setDistrict('');
+                geocodeLocation(`${initialCity}, Turkey`);
+            }
             return;
         }
 
@@ -45,10 +50,10 @@ export const useLocation = (initialCity?: string) => {
         getLocationWithGPS();
     }, [initialCity]);
 
-    const geocodeCity = async (cityName: string) => {
+    const geocodeLocation = async (query: string) => {
         try {
             const response = await fetch(
-                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityName)},Turkey&limit=1`,
+                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
                 { headers: { 'User-Agent': 'IftarVaktim/1.0' } }
             );
             const data = await response.json();
